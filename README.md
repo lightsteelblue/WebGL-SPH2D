@@ -1,3 +1,3 @@
 # WebGL-SPH2D
-## DEMO  
+## LIVE DEMO  
 [here](https://lightsteelblue.github.io/WebGL-SPH2D/)
