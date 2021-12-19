@@ -1,4 +1,5 @@
-# WebGL-SPH2D
+# WebGL-SPH2D  
+A 2D fluid simulation using Smoothed Particle Hydrodynamics.  
 ## DEMO  
 https://lightsteelblue.github.io/WebGL-SPH2D/ (for PC or Android)  
 
