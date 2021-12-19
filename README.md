@@ -1,5 +1,5 @@
 # WebGL-SPH2D
-## [LIVE DEMO]  
+## DEMO  
 https://lightsteelblue.github.io/WebGL-SPH2D/ (for PC or Android)  
 
 ## References  
