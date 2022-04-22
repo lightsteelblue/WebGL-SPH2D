@@ -3,11 +3,11 @@
 precision highp float;
 
 in float vDistance;
-out vec4 oColor;
+out mediump vec4 oColor;
 
-vec3 hsv2rgb(in vec3 hsv) {
-    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    vec3 p = abs(fract(hsv.xxx + K.xyz) * 6.0 - K.www);
+mediump vec3 hsv2rgb(in mediump vec3 hsv) {
+    const mediump vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    mediump vec3 p = abs(fract(hsv.xxx + K.xyz) * 6.0 - K.www);
     return hsv.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), hsv.y);
 }
 
@@ -22,13 +22,13 @@ void main() {
     vec3 N = vec3(normalize(vec2(dDdx, dDdy)), 0);
 
     float a = 0.4 * abs(dot(N, H)) + 0.6;
-    float r = clamp((vDistance * a - 0.3) / (1.0 - 0.3), 0.0, 1.0);
-    highp float c = step(0.5, r);
-    highp float s = smoothstep(0.5*c, 0.5-0.5*c, r-0.5*c);
+    float r = clamp((vDistance * a - 0.3) * 1.43, 0.0, 1.0);
+    float c = step(0.5, r);
+    float s = smoothstep(0.5*c, 0.5-0.5*c, r-0.5*c);
 
     N = normalize(vec3(N.xy, -0.5 * sqrt(1.0 - vDistance * vDistance)));
 
-    highp float NdotH = max(dot(N, H), 0.0);
+    float NdotH = max(dot(N, H), 0.0);
     float lambert = max(dot(-L, N), 0.0);
     float NdotH5 = NdotH * NdotH * NdotH * NdotH * NdotH;
     float specular = NdotH5 * step(0.1, vDistance);
