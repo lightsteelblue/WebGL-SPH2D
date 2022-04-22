@@ -60,6 +60,7 @@ export const createTexture = (gl, width, height, internalformatStr, wrapS, wrapT
         RG16I  : { internalformat: gl.RG16I,   format: gl.RG_INTEGER,   type: gl.SHORT },
         RG16UI : { internalformat: gl.RG16UI,  format: gl.RG_INTEGER,   type: gl.UNSIGNED_SHORT },
         R16F   : { internalformat: gl.R16F,    format: gl.RED,          type: gl.HALF_FLOAT },
+        R16I   : { internalformat: gl.R16I,    format: gl.RED_INTEGER,  type: gl.SHORT },
         R16UI  : { internalformat: gl.R16UI,   format: gl.RED_INTEGER,  type: gl.UNSIGNED_SHORT },
         R8     : { internalformat: gl.R8,      format: gl.RED,          type: gl.UNSIGNED_BYTE },
     };
