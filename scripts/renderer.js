@@ -13,6 +13,7 @@ const _vertFilenames = [
     'pointsprite.vert',
     'smoothpos.vert'  ,
     'ms.vert'         ,
+    'inittable.vert'
 ];
 const _fragFilenames = [
     'background.frag'    ,
@@ -21,6 +22,7 @@ const _fragFilenames = [
     'weightedcenter.frag',
     'distancefield.frag' ,
     'ms.frag'            ,
+    'inittable.frag'
 ];
 let _vertSources;
 let _fragSources;
@@ -31,12 +33,13 @@ let _smoothPosProgram;
 let _weightedCenterProgram;
 let _distanceFieldProgram;
 let _marchingSquaresProgram;
+let _initTableProgram;
 
 let _smoothPosFBO;
 let _weightedCenterFBO;
 let _distanceFieldFBO;
 
-let _vertIndicesVBO;
+let _tabelTex;
 
 let _resolution;
 let _cellSize;
@@ -69,10 +72,10 @@ export const init = (gl, canvas, meshSize, meshingAreaMin, meshingAreaMax) => {
 
     addEventListener('resize', _calcSimToClip);
 
-    _vertIndicesVBO = GLU.createVBO(_gl, [0, 1, 2, 3, 4, 5]);
-
     _createPrograms();
     _createFBOs();
+
+    _initTableTex();
 
     GLU.bindUBO(_gl, uniformBlockBindingTable.MarchingSquares, [
         _resolution.x,   _resolution.y,
@@ -130,7 +133,7 @@ export const renderWater = (particleCount, dp, particleTexReso, intPosTex, _, ce
     _gl.blendFuncSeparate(_gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA, _gl.ONE, _gl.ONE);
     _gl.uniform4f(_marchingSquaresProgram.uniform('moveScale'), _simToClip.move.x, _simToClip.move.y, _simToClip.scale.x, _simToClip.scale.y);
     GLU.bindTextureUniform(_gl, 0, _marchingSquaresProgram.uniform('distFieldTex'), _distanceFieldFBO.texture('tex'));
-    GLU.setAttributes(_gl, [_vertIndicesVBO], _marchingSquaresProgram.location, _marchingSquaresProgram.stride);
+    GLU.bindTextureUniform(_gl, 1, _marchingSquaresProgram.uniform('tableTex'), _tabelTex);
     _gl.drawArraysInstanced(_gl.TRIANGLE_STRIP, 0, 6, _resolution.x * _resolution.y);
 
     _gl.disable(_gl.BLEND);
@@ -163,7 +166,8 @@ const _createPrograms = () => {
     _smoothPosProgram       = create(_vertSources[2], _fragSources[2], null, null, ['ParticleTexture', 'CellTexture', 'ToIntPos', 'ToFloatPos', 'Cell']);
     _weightedCenterProgram  = create(_vertSources[0], _fragSources[3], null, null, ['ParticleTexture', 'CellTexture', 'ToFloatPos', 'Cell', 'MarchingSquares']);
     _distanceFieldProgram   = create(_vertSources[0], _fragSources[4], null, null, ['MarchingSquares']);
-    _marchingSquaresProgram = create(_vertSources[3], _fragSources[5], [0], [1], ['MarchingSquares']);
+    _marchingSquaresProgram = create(_vertSources[3], _fragSources[5], null, null, ['MarchingSquares']);
+    _initTableProgram       = create(_vertSources[4], _fragSources[6], [0], [1]);
 };
 
 const _createFBOs = () => {
@@ -172,6 +176,38 @@ const _createFBOs = () => {
     _weightedCenterFBO = create(_resolution, [['tex', 'RGBA16F']]);
     _distanceFieldFBO  = create(_resolution, [['tex', 'R16F']]);
 };
+
+const _initTableTex = () => {
+    const table = [
+        //  いる頂点       いらない頂点
+        0, 0, 0, 0, 0, 0,
+        0, 4, 5,          5, 5, 5,
+        1, 4, 6,          6, 6, 6,
+        0, 1, 5, 6,       6, 6,
+        2, 5, 7,          7, 7, 7,
+        0, 4, 2,          7, 7, 7,
+        5, 4, 2, 1, 7, 6,
+        0, 2, 7, 0, 6, 1,
+        3, 7, 6,          6, 6, 6,
+        4, 6, 0, 3, 5, 7,
+        4, 1, 7, 3,       3, 3,
+        0, 1, 5, 7, 1, 3,   
+        5, 6, 2, 3,       3, 3,
+        0, 4, 2, 6, 2, 3,
+        1, 4, 3, 5, 3, 2,
+        0, 1, 2, 3,       3, 3];
+    
+    let vbo = GLU.createVBO(_gl, table);
+    let fbo = new FramebufferObject(_gl, table.length, 1, [['tex', 'R16I']]);
+    fbo.bind();
+    _initTableProgram.use();
+    _gl.uniform1f(_initTableProgram.uniform('texelSize'), 1/table.length);
+    GLU.setAttributes(_gl, [vbo], _initTableProgram.location, _initTableProgram.stride);
+    _gl.drawArrays(_gl.POINTS, 0, table.length);
+
+    _tabelTex = fbo.texture('tex');
+    fbo.detache('tex');
+}
 
 const _calcSimToClip = () => {
     let aspect = _canvas.width / _canvas.height;
