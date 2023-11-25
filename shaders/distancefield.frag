@@ -29,7 +29,7 @@ void main(void) {
         texelFetch(weightedCenterTex, min(node + ivec2(0, 1), lim),      0).xy
     );
 
-    // 中心差分で直積[∇ × r]を求める
+    // ∇ × r
     vec4 m = vec4(
         r[1].x - r[0].x, r[1].y - r[0].y,
         r[3].x - r[2].x, r[3].y - r[2].y
